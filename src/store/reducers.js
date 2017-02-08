@@ -1,10 +1,14 @@
 import { combineReducers } from 'redux';
 import { routerReducer } from 'react-router-redux';
-// import appReducer from './appReducer';
+import auth from './Auth/reducer';
+import spotifyPlaylists from './SpotifyPlaylists/reducer';
+import entities from './entitiesReducer';
 
 const reducer = combineReducers({
-  // app: appReducer,
   routing: routerReducer,
+  auth,
+  spotifyPlaylists,
+  entities,
 });
 
 export default reducer;

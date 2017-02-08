@@ -1,35 +1,41 @@
-function ResponseError(code = 500, response) {
-  const message = response.message || 'Something went wrong';
-  this.message = message;
-  this.errors = response.errors || {};
-  this.statusCode = code;
-  this.name = 'ResponseError';
-  const err = Error(message);
-  this.stack = err.stack;
-}
+import { merge } from 'lodash';
+import { getAuthToken } from './auth';
+import normalize from './normalize';
 
-function resolveJson(res) {
-  const originalRes = res.clone();
-  return res.json().then(json =>
-    Object.assign({}, json, { status: originalRes.status, ok: originalRes.ok }),
-  );
-}
-
-function fetchWithJson(method, url, headers, body = '') {
-  // eslint-disable-next-line no-undef
-  return fetch(url, { headers, method, body })
-    .then(resolveJson);
-}
-
-function maybeHandleError(res) {
-  if (!res.ok) {
-    throw new ResponseError(res.status, res);
+function checkStatus(response) {
+  if (response.status >= 200 && response.status < 300) {
+    return response;
   }
 
-  return res;
+  const error = new Error(response.statusText);
+  error.response = response;
+  throw error;
 }
 
-export {
-  fetchWithJson,
-  maybeHandleError,
-};
+function buildUrl(path) {
+  return `http://localhost:4000${path}`;
+}
+
+function optionsWithDefaults(options) {
+  const defaults = {
+    headers: {
+      'Accept': 'application/vnd.api+json',
+      'Content-Type': 'application/json',
+      'Authorization': getAuthToken(),
+    }
+  };
+
+  return merge({}, defaults, options);
+}
+
+export default async function request(path, options = {}) {
+  const url = buildUrl(path);
+  options = optionsWithDefaults(options);
+  const response = await fetch(url, options);
+
+  checkStatus(response);
+
+  const jsonResponse = await response.json();
+
+  return normalize(jsonResponse);
+}

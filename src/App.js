@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Provider } from 'react-redux';
 import { Router, browserHistory } from 'react-router';
 import { syncHistoryWithStore } from 'react-router-redux';
-import getRoutes from './routes';
+import Routes from './routes';
 import createStore from './store/createStore';
 
 const store = createStore();
@@ -13,7 +13,7 @@ class App extends Component {
     return (
       <Provider store={store}>
         <Router history={history}>
-          {getRoutes()}
+          {Routes}
         </Router>
       </Provider>
     );
